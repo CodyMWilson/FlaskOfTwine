@@ -13,6 +13,10 @@ import gspread
 from google.oauth2.credentials import Credentials
 import pandas as pd
 
+from Card import Card
+
+debug = True
+
 # If modifying these scopes, delete the file token.json.
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
@@ -39,7 +43,7 @@ def main():
 
 
     client = gspread.authorize(creds)
-
+        
     try:
         #service = build('sheets', 'v4', credentials=creds)
 
@@ -48,21 +52,20 @@ def main():
         #newSheet = client.create("testSheet")
 
         #newSheet.add_worksheet(title="Sheet2", rows="10", cols="10", index=0)
-       import glob
-       import json, utils
-       from bs4 import BeautifulSoup
+        import glob
+        import json, utils
+        from bs4 import BeautifulSoup
 
-       for file in glob.glob("*.html"):
-           with open(file, 'r') as html_file: 
+        for file in glob.glob("*.html"):
+            with open(file, 'r') as html_file: 
 
-               soup = BeautifulSoup(html_file, 'html5lib') 
+                soup = BeautifulSoup(html_file, 'html5lib') 
 
-               table = soup.find('script')#, attrs = {'id':'script'})
-               print(table)
+                table = soup.find('script')#, attrs = {'id':'script'})
+                print(table)
                
-
-               #now that we have the data, we have some processing to do... 
-               # 1 - the html option "tags" is ALL part of the alias box
+                #now that we have the data, we have some processing to do... 
+                # 1 - the html option "tags" is ALL part of the alias box
                # 2 - anything in a 'tags' with .fuz or .wav extension is ignored
                # 3 - the html "name" is the card title and goes into the context box
                # 4 - body of html is the line of dialogue
@@ -87,16 +90,29 @@ def main():
 
                # Implementation - 
                #  Each html (voice line/card) can be an object with number of links, line data, what the links are, color of the table, 
-               for row in soup.findAll('tw-passagedata'):
-                   print(row.text.strip())
+
+                # init required for variable scope outside of loop                
+                cardList = []
+
+                # Find every occurance of a twine 'card' as designated by the tw-passagedata attribute
+                for row in soup.findAll('tw-passagedata'):
+                    #if debug:
+                        #print(row.text.strip())
+
+                    # Create a structure with every card found from imported twine sheet
+                    newCard = Card(str(row))
+                    newCard.init()
+                    cardList.append(newCard)
+                print(cardList)
+               
                #html = html_file.read()
                #jsonData = xmltojson.parse(html)
-               print(file)
+                print(file)
 
-       import pprint
-       pp = pprint.PrettyPrinter(width=41, compact=True)
-       #print(jsonData) 
-       #pp.pprint(jsonData)
+        import pprint
+        pp = pprint.PrettyPrinter(width=41, compact=True)
+        #print(jsonData) 
+        #pp.pprint(jsonData)
 
     except Exception as e:
         print('Failed to create sheet due to ' + str(e))
