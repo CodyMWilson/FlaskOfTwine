@@ -60,8 +60,8 @@ class Card():
         # This will print out the tag definitions that we know will come from Twine for convenience
         soup = self._bsTag 
         print(soup)
-        print('body is -' + str(soup.string))
-        print('index is -' + str(self._index))
-        print('name is -' + str(soup['name']))
-        print('tags are -' + str(soup['tags']))
-        print('this is card -' + str(self._index) + ' with these ' +str(self._branchNum) + ' branches ' + str(self._branches)) 
+        print('body: ' + str(soup.string))
+        print('index: ' + str(self._index))
+        print('name: ' + str(soup['name']))
+        print('tags: ' + str(soup['tags']))
+        print('this is card: ' + str(self._index) + ' with these ' +str(self._branchNum) + ' branches ' + str(self._branches))
