@@ -9,7 +9,8 @@ class Card():
         self._name = None
         self._body = None
 
-        self._branchNum = None
+        self._branchNum = 0
+        self._branches = []
 
         self._tags= None
         self._tagsWav = None
@@ -42,6 +43,14 @@ class Card():
                 self._tagsFuz = word
                 break
             self._tagsList.append(word)
+        
+        # Find branches using the text string
+        branches = re.findall('\[\[.*?\]\]', self._body)
+        for branch in branches:
+            # Strip the characters '[' and ']' and record how many branches there are
+            branch = re.sub('[\[\]]','',branch)
+            self._branches.append(branch)
+            self._branchNum += 1
 
         self.debugPrint() 
 
@@ -51,15 +60,8 @@ class Card():
         # This will print out the tag definitions that we know will come from Twine for convenience
         soup = self._bsTag 
         print(soup)
-        print('body is ' + str(soup.string))
-        print('index is ' + str(self._index))
-        print('name is ' + str(soup['name']))
-        print('tags are ' + str(soup['tags']))
-        # Find branches using the text string
-        branches = re.findall('\[\[.*?\]\]', self._body)
-        branchesStripped = [] 
-        for branch in branches: 
-            branch = re.sub(r'\W','',branch)
-            branchesStripped.append(branch)
-        # Find branches using the text string
-        print('this is card ' + str(self._index) + ' branches ' + str(branchesStripped)) 
+        print('body is -' + str(soup.string))
+        print('index is -' + str(self._index))
+        print('name is -' + str(soup['name']))
+        print('tags are -' + str(soup['tags']))
+        print('this is card -' + str(self._index) + ' with these ' +str(self._branchNum) + ' branches ' + str(self._branches)) 

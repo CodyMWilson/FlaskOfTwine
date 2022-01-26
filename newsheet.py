@@ -43,13 +43,16 @@ def main():
 
 
     client = gspread.authorize(creds)
-        
     try:
         #service = build('sheets', 'v4', credentials=creds)
 
         # Call the Sheets API
     
-        #newSheet = client.create("testSheet")
+        newSheet = client.create("testSheet")
+        # You can share a sheet using this syntax
+        # client.share('myemail@gmail.com, perm_type='user', role='author')
+        worksheet = newSheet.add_worksheet(title='title', rows="100", cols="20")
+        worksheet.update_cell(1,1,'test')
 
         #newSheet.add_worksheet(title="Sheet2", rows="10", cols="10", index=0)
         import glob
