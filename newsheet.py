@@ -96,11 +96,9 @@ def main():
                 index = 0
                 # Find every occurance of a twine 'card' as designated by the tw-passagedata attribute
                 for row in soup.findAll('tw-passagedata'):
-                    #if debug:
-                        #print(row.text.strip())
                     index += 1
                     # Create a structure with every card found from imported twine sheet
-                    newCard = Card(str(row))
+                    newCard = Card(row)
                     newCard.init(index)
                     cardList.append(newCard)
                 print(cardList)
