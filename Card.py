@@ -2,16 +2,16 @@
 import json, utils
 from bs4 import BeautifulSoup
 import re
+from tableDefines import columnTemplate 
 
 class Card():
     def __init__(self, bsTag):
         self._bsTag = bsTag
         self._name = None
         self._body = None
-
+        self._bodySplit = None
         self._branchNum = 0
         self._branches = []
-
         self._tags= None
         self._tagsWav = None
         self._tagsFuz = None
@@ -19,7 +19,6 @@ class Card():
 
         # Set based on other options
         self._lineColor = None
-
         self._index = None
         self._indexNext = None
 
@@ -52,8 +51,20 @@ class Card():
             self._branches.append(branch)
             self._branchNum += 1
 
-        self.debugPrint() 
+        intermediate = self._body.split('[',1)[0]
+        self._bodySplit = intermediate.rstrip("\n")
 
+        #self.debugPrint() 
+
+
+    def defineRow(self):
+
+        definedRow = {}
+        definedRow[columnTemplate['Notes']] = ''
+        definedRow[columnTemplate['Your Line']] = self._bodySplit
+        definedRow[columnTemplate['Context/ABXY']] = self._name
+        definedRow[columnTemplate['Alias']] = self._tags
+        return definedRow
 
     def debugPrint(self):
         

@@ -46,6 +46,7 @@ templateText = {'B1' : 'Notes', 'C1' : 'Your Line', 'D1' : 'Context/ABXY', 'E1' 
 notes = { 1 : 'Please follow the Recording Guidelines: https://docs.google.com/document/d/1Hwp_cCeh60xjnyq1Fj9wppRSd9jAtrOQ11VlunnMHn8/edit?usp=sharing', 
           2 : 'Recording should be RAW (no EQ/Compression/Noise Reduction etc.)',
           3 : '2 - 3 takes for all lines'}
+startIndex = 2
 
 def main():
     try:
@@ -117,7 +118,7 @@ def main():
         newSheet = client.create(sheetTitle)
         # You can share a sheet using this syntax
         # client.share('myemail@gmail.com, perm_type='user', role='author')
-        worksheet = newSheet.add_worksheet(title='title', rows="100", cols="20")
+        worksheet = newSheet.add_worksheet(title='title', rows="3000", cols="20")
         
         # TODO make this a function call, requires separation of the libraries
         # sheetInit()
@@ -125,9 +126,30 @@ def main():
         for key, body in templateText.items():
             print(key + ' - ' + body)
             worksheet.update(key, body)
-        for card in cardList:
-            placeholder = 1
+        
+        rowNum = startIndex
+        start = 'B2'
+        end = 'E'
+        finalList = []
 
+        for card in cardList:
+            row = card.defineRow()    
+            
+            toUpdateRow = [] 
+            for key, element in row.items():
+                #print('key: ' + key + 'element: ' + element)
+                boxKey = key + str(rowNum)
+                toUpdateRow.append(element)
+                #print('boxkey: ' + boxKey)
+
+            # Each card is it's own row
+            rowNum += 1
+            finalList.append(toUpdateRow)
+
+        end += str(rowNum)
+        print(finalList)
+        print(start,':',end)
+        worksheet.update((start+':'+end), finalList)
 
     except Exception as e:
         print('Failed to create sheet due to ' + str(e))
