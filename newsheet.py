@@ -47,7 +47,7 @@ notes = { 1 : 'Please follow the Recording Guidelines: https://docs.google.com/d
           3 : '2 - 3 takes for all lines'}
 startIndex = 2
 
-def main():
+def convert(nFile):
     try:
         
         # Access the google API 
@@ -58,55 +58,55 @@ def main():
         import json, utils
         from bs4 import BeautifulSoup
 
-        for file in glob.glob("*.html"):
-            with open(file, 'r') as html_file: 
+        #for nFile in glob.glob("*.html"):
+        #with open(nFile, 'r') as html_file: 
 
-                soup = BeautifulSoup(html_file, 'html5lib') 
-                
-                title = soup.find('title')
-                sheetTitle = title.text.strip()
+        soup = BeautifulSoup(nFile, 'html5lib') 
+        
+        title = soup.find('title')
+        sheetTitle = title.text.strip()
 
-                table = soup.find('script')#, attrs = {'id':'script'})
-                print(table)
-               
-                #now that we have the data, we have some processing to do... 
-                # 1 - the html option "tags" is ALL part of the alias box
-               # 2 - anything in a 'tags' with .fuz or .wav extension is ignored
-               # 3 - the html "name" is the card title and goes into the context box
-               # 4 - body of html is the line of dialogue
-               # 5 - each distinct character should have their own sheet generated (so each can have their own structure)
-               # 6 - Each sheet needs to be created based on a template
-               # 7 - Each sheet needs a quest name 
-               # 8 - Each scene has a delineater between them, and scenes are cards that branch to four other cards
-               # # Note that a branch means that a text option in the body of the option delineated by [[ .. ]] will be the name for another html tag (card
-               # 9 - Cards with a single link can be put at the bottom in close to their original order.
-               # 10 - Player choice sections need to be ordered
-               # 11 - Character lines that flow un-interrupted are designated by having the same character have multiple linear branches and can all be boxed together
-               # 12 - Lines are color coded and can be assigned during runtime
+        table = soup.find('script')#, attrs = {'id':'script'})
+        print(table)
+        
+        #now that we have the data, we have some processing to do... 
+        # 1 - the html option "tags" is ALL part of the alias box
+        # 2 - anything in a 'tags' with .fuz or .wav extension is ignored
+        # 3 - the html "name" is the card title and goes into the context box
+        # 4 - body of html is the line of dialogue
+        # 5 - each distinct character should have their own sheet generated (so each can have their own structure)
+        # 6 - Each sheet needs to be created based on a template
+        # 7 - Each sheet needs a quest name 
+        # 8 - Each scene has a delineater between them, and scenes are cards that branch to four other cards
+        # # Note that a branch means that a text option in the body of the option delineated by [[ .. ]] will be the name for another html tag (card
+        # 9 - Cards with a single link can be put at the bottom in close to their original order.
+        # 10 - Player choice sections need to be ordered
+        # 11 - Character lines that flow un-interrupted are designated by having the same character have multiple linear branches and can all be boxed together
+        # 12 - Lines are color coded and can be assigned during runtime
 
-               # This means that as we process we need to keep track of the following for each of x characters:
-               # 1 Individual lines w/
-               # # Character speaking
-               # # Branches
-               # # Context
-               # # 
-               # 2 How many branches each line has
-               # 3  
+        # This means that as we process we need to keep track of the following for each of x characters:
+        # 1 Individual lines w/
+        # # Character speaking
+        # # Branches
+        # # Context
+        # # 
+        # 2 How many branches each line has
+        # 3  
 
-               # Implementation - 
-               #  Each html (voice line/card) can be an object with number of links, line data, what the links are, color of the table, 
+        # Implementation - 
+        #  Each html (voice line/card) can be an object with number of links, line data, what the links are, color of the table, 
 
-                # init required for variable scope outside of loop                
-                index = 0
-                # Find every occurance of a twine 'card' as designated by the tw-passagedata attribute
-                for row in soup.findAll('tw-passagedata'):
-                    index += 1
-                    # Create a structure with every card found from imported twine sheet
-                    newCard = Card(row)
-                    newCard.init(index)
-                    cardList.append(newCard)
-               
-                print(file)
+        # init required for variable scope outside of loop                
+        index = 0
+        # Find every occurance of a twine 'card' as designated by the tw-passagedata attribute
+        for row in soup.findAll('tw-passagedata'):
+            index += 1
+            # Create a structure with every card found from imported twine sheet
+            newCard = Card(row)
+            newCard.init(index)
+            cardList.append(newCard)
+        
+            print(nFile)
 
         import pprint
         pp = pprint.PrettyPrinter(width=41, compact=True)

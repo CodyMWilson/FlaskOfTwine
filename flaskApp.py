@@ -20,14 +20,11 @@ def index():
 @app.route('/', methods=['POST'])
 def upload_file():
     uploaded_file = request.files['file']
-    if uploaded_file.filename != '':
-        print("saved!")
-        uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename))
-
-    if request.form['Run Convertor'] == 'Do Something':
-        test('test')   
+    print(uploaded_file.file_name)
+    # newsheet.convert(uploaded_file)
+    print("saved!")
 
     return redirect(url_for('index'))
 
 def test(val):
-    print(val)
+    newsheet.convert(uploaded_file)
