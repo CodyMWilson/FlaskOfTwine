@@ -1,6 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
 
+import newsheet
+
 UPLOAD_FOLDER = os.getcwd()
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 

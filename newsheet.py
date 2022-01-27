@@ -10,7 +10,6 @@ from googleapiclient.errors import HttpError
 
 import gspread
 from google.oauth2.credentials import Credentials
-import pandas as pd
 
 from Card import Card
 
