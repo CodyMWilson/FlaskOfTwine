@@ -3,13 +3,15 @@ from __future__ import print_function
 import os.path
 
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 import gspread
 from google.oauth2.credentials import Credentials
+import flask, requests
 
 from Card import Card
 
@@ -37,9 +39,34 @@ def authorizeGoogleApi():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file('credentials.json', scopes=SCOPES)
+            flow.redirect_uri='https://flaskoftwine.herokuapp.com/'
+            authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
+            return flask.redirect(authorization_url)
+
+            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+                'credentials.json',
+                scopes=SCOPES,
+                state=state)
+            flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
+
+            authorization_response = flask.request.url
+            flow.fetch_token(authorization_response=authorization_response)
+
+            # Store the credentials in the session.
+            # ACTION ITEM for developers:
+            #     Store user's access and refresh tokens in your data store if
+            #     incorporating this code into your real app.
+            credentials = flow.credentials
+            flask.session['credentials'] = {
+                'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes}
+
+            creds = flow.credentials
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
