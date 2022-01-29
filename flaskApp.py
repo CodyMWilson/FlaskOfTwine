@@ -26,39 +26,42 @@ UPLOAD_FOLDER = os.getcwd()
 ALLOWED_EXTENSIONS = {'html'}
 
 print("hello from python!")
+global flow_creds
+uploaded = False
+
+uploaded_file_path = None
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-uploaded_file_path = None
+@app.route('/', methods=['GET','POST'])
+def index():
+    if request.method == 'POST': 
+        if request.form['submit_button'] == 'Authorize':
+            print('Authorize')
+            return redirect(url_for('authorize'))
 
-@app.route('/', methods=['GET'])
-def index():    
-    return render_template('index.html')
+        elif request.form["submit_button"] == 'Upload':      
+            uploaded_file = request.files['file']
+            if uploaded_file.filename == '':
+                return redirect(url_for('index'))
+            uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename))
+            uploaded_file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+            print("saved! to " + str(uploaded_file_path) + ' and dir after glob:')
+            test()
+            uploaded = True
 
-@app.route('/', methods=['POST'])
-def upload_file():
-    
-    if request.form['Authorize'] == "Authorize":
-        print("Authorize")
-        return redirect(url_for('authorize'))
+        elif request.form['submit_button'] == "Run":
+            if flow_creds:
+                newsheet.convert(flow_creds)
+            else:
+                print("Please authorize the program first.")
 
-           
-    uploaded_file = request.files['file']
-    if uploaded_file.filename == '':
-        return redirect(url_for('index'))
-    uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename))
-    uploaded_file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
-    print("saved! to " + str(uploaded_file_path) + ' and dir after glob:')
-    test()
-
-    if request.form['Run Convertor'] == "Do Something":
-        newsheet.convert()
-    #files = request.files.getlist("file[]")
-        return redirect(url_for('index'))
-
-
+        return render_template('index.html')
+     
+    elif request.method == 'GET':
+        return render_template('index.html')
 
 def test():
     newsheet.testGlob()
@@ -112,10 +115,22 @@ def oauth2callback():
   # Store credentials in the session.
   # ACTION ITEM: In a production app, you likely want to save these
   #              credentials in a persistent database instead.
-  credentials = flow.credentials
+  flask.session['credentials'] = credentials_to_dict(flow.credentials)
+  global flow_creds 
+  flow_creds = flow.credentials
   #flask.session['credentials'] = credentials_to_dict(credentials)
 
   return flask.redirect(url_for('index'))
+
+# Helper for keeping credentials
+def credentials_to_dict(credentials):
+  return {'token': credentials.token,
+          'refresh_token': credentials.refresh_token,
+          'token_uri': credentials.token_uri,
+          'client_id': credentials.client_id,
+          'client_secret': credentials.client_secret,
+          'scopes': credentials.scopes}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
