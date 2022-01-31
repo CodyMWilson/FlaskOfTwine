@@ -53,8 +53,10 @@ def index():
             uploaded = True
 
         elif request.form['submit_button'] == "Run":
+            global flow_creds
             if flow_creds:
                 newsheet.convert(flow_creds)
+                flow_creds = None
             else:
                 print("Please authorize the program first.")
 
