@@ -26,7 +26,6 @@ UPLOAD_FOLDER = os.getcwd()
 ALLOWED_EXTENSIONS = {'html'}
 
 print("hello from python!")
-global flow_creds
 uploaded = False
 
 uploaded_file_path = None
@@ -38,7 +37,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route('/', methods=['GET','POST'])
 def index():
     if request.method == 'POST': 
-        if request.form['submit_button'] == 'Authorize':
+        if request.form['submit_button'] == 'Authorize and Run':
             print('Authorize')
             return redirect(url_for('authorize'))
 
@@ -53,12 +52,8 @@ def index():
             uploaded = True
 
         elif request.form['submit_button'] == "Run":
-            global flow_creds
-            if flow_creds:
-                newsheet.convert(flow_creds)
-                flow_creds = None
-            else:
-                print("Please authorize the program first.")
+            
+            print("Please authorize the program first.")
 
         return render_template('index.html')
      
@@ -121,6 +116,8 @@ def oauth2callback():
   global flow_creds 
   flow_creds = flow.credentials
   #flask.session['credentials'] = credentials_to_dict(credentials)
+
+  newsheet.convert(flow_creds)
 
   return flask.redirect(url_for('index'))
 
