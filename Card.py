@@ -66,6 +66,9 @@ class Card():
         definedRow[columnTemplate['Alias']] = self._tags
         return definedRow
 
+    def getTags(self):
+        return self._tagsList
+
     def debugPrint(self):
         
         # This will print out the tag definitions that we know will come from Twine for convenience

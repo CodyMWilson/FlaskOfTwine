@@ -148,6 +148,18 @@ def convert(creds):
             client = gspread.authorize(creds)
         except Exception as e:
             print("Failed to create credentials due to: " + str(e))
+
+        # Pre-processing 
+        individualSheets = []
+        for card in cardList:
+            for character in card.getTags():
+                if character not in individualSheets:
+                    individualSheets.append(character)
+                    print("character appended " + str(character))
+
+        print("Whole sheetlist is ")
+        print(individualSheets)
+
         try:
             newSheet = client.create(sheetTitle)
             # You can share a sheet using this syntax
