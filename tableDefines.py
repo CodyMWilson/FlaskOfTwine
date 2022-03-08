@@ -7,3 +7,5 @@ notes = { 1 : 'Please follow the Recording Guidelines: https://docs.google.com/d
           2 : 'Recording should be RAW (no EQ/Compression/Noise Reduction etc.)',
 
           3 : '2 - 3 takes for all lines'}
+
+templateKey = "1hSZxdBEdfYNAPEYtOLiGTPyuKMmqPJR6zGr2Wc_mhV8"

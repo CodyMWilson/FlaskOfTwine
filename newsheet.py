@@ -12,8 +12,11 @@ from googleapiclient.errors import HttpError
 import gspread
 from google.oauth2.credentials import Credentials
 import flask, requests
+#from numpy import int
 
+# Self-defined objects to store session information
 from Card import Card
+from Sheet import Sheet
 
 import glob
 import json, utils
@@ -27,6 +30,14 @@ debug = True
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
 
+sheetTitle = None
+cardList = []
+templateText = {'B1' : 'Notes', 'C1' : 'Your Line', 'D1' : 'Context/ABXY', 'E1' : 'Alias'}
+notes = { 1 : 'Please follow the Recording Guidelines: https://docs.google.com/document/d/1Hwp_cCeh60xjnyq1Fj9wppRSd9jAtrOQ11VlunnMHn8/edit?usp=sharing', 
+          2 : 'Recording should be RAW (no EQ/Compression/Noise Reduction etc.)',
+          3 : '2 - 3 takes for all lines'}
+startIndex = 29
+
 def authorizeGoogleApi():
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
@@ -39,20 +50,12 @@ def authorizeGoogleApi():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file('credentials.json', scopes=SCOPES)
-            flow.redirect_uri='https://flaskoftwine.herokuapp.com/'
-            authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
-            return flask.redirect(authorization_url)
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
 
-            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-                'credentials.json',
-                scopes=SCOPES,
-                state=state)
-            flow.redirect_uri = flask.url_for('oauth2callback', _external=True)
 
-            authorization_response = flask.request.url
-            flow.fetch_token(authorization_response=authorization_response)
-
+        # Save the credentials for the next run
             # Store the credentials in the session.
             # ACTION ITEM for developers:
             #     Store user's access and refresh tokens in your data store if
@@ -67,22 +70,21 @@ def authorizeGoogleApi():
                 'scopes': credentials.scopes}
 
             creds = flow.credentials
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+    
     return creds
-
-sheetTitle = None
-cardList = []
-templateText = {'B1' : 'Notes', 'C1' : 'Your Line', 'D1' : 'Context/ABXY', 'E1' : 'Alias'}
-notes = { 1 : 'Please follow the Recording Guidelines: https://docs.google.com/document/d/1Hwp_cCeh60xjnyq1Fj9wppRSd9jAtrOQ11VlunnMHn8/edit?usp=sharing', 
-          2 : 'Recording should be RAW (no EQ/Compression/Noise Reduction etc.)',
-          3 : '2 - 3 takes for all lines'}
-startIndex = 2
 
 def testGlob():
     for file in glob.glob("/app/*.html"):
         print('html file found: ' + str(file))
+
+def templateIn(creds):
+    client = gspread.authorize(creds)
+    title = "script"
+    shareEmail = "cody@lkwilson.net"
+    client.copy("1hSZxdBEdfYNAPEYtOLiGTPyuKMmqPJR6zGr2Wc_mhV8", title=title, copy_permissions=True)
+    worksheet = client.open(title)
+    worksheet.share(shareEmail, perm_type='user', role='writer')
+    return worksheet
 
 def convert(creds):
     try:
@@ -93,6 +95,8 @@ def convert(creds):
         #newSheet.add_worksheet(title="Sheet2", rows="10", cols="10", index=0)
             for nFile in glob.glob("/app/*.html"):
                 with open(nFile, 'r') as html_file: 
+
+                    newSheet = templateIn(creds)
 
                     soup = BeautifulSoup(html_file, 'html5lib') 
                     
@@ -149,23 +153,28 @@ def convert(creds):
         except Exception as e:
             print("Failed to create credentials due to: " + str(e))
         try:
-            newSheet = client.create(sheetTitle)
             # You can share a sheet using this syntax
             # client.share('myemail@gmail.com, perm_type='user', role='author')
-            worksheet = newSheet.add_worksheet(title='title', rows="3000", cols="20")
-        
+            # You can create a new sheet using this syntax
+            # worksheet = newSheet.add_worksheet(title='title', rows="3000", cols="20")
+            
+            # Returns the default worksheet one (indexed at zero)
+            worksheet = newSheet.get_worksheet(0)
+
         except Exception as e:
             print("Failed to create new sheet due to: " + str(e))
-        
+
         # TODO make this a function call, requires separation of the libraries
         # sheetInit()
-        worksheet.update('A1:B2', [[1,2], [3,4]])
+        #worksheet.update('A1:B2', [[1,2], [3,4]])
+        
+        
         for key, body in templateText.items():
             print(key + ' - ' + body)
             worksheet.update(key, body)
         
         rowNum = startIndex
-        start = 'B2'
+        start = 'B29'
         end = 'E'
         finalList = []
 
@@ -192,6 +201,9 @@ def convert(creds):
 
     except Exception as e:
         print('Failed to create sheet due to ' + str(e))
+
+def main():
+    convert(authorizeGoogleApi)
 
 if __name__ == '__main__':
     main()
